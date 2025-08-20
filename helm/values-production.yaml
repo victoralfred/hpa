@@ -1,0 +1,273 @@
+# Production values for HPA Helm chart
+global:
+  environment: production
+  domain: hpa.example.com
+  storageClass: fast-ssd
+
+backend:
+  replicaCount: 5
+  
+  image:
+    repository: registry.example.com/hpa/backend
+    tag: "1.0.0"
+    pullPolicy: Always
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 70
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+  
+  env:
+    LOG_LEVEL: "warn"
+    ENVIRONMENT: "production"
+    REQUIRE_EMAIL_VERIFICATION: "true"
+    ALLOWED_ORIGINS: "https://hpa.example.com,https://www.hpa.example.com"
+    RATE_LIMIT_REQUESTS: "1000"
+    RATE_LIMIT_WINDOW: "1m"
+    ENABLE_METRICS: "true"
+    ENABLE_TRACING: "true"
+  
+  secrets:
+    JWT_SECRET: "${JWT_SECRET_FROM_VAULT}"
+
+frontend:
+  replicaCount: 3
+  
+  image:
+    repository: registry.example.com/hpa/frontend
+    tag: "1.0.0"
+    pullPolicy: Always
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 60
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+postgresql:
+  enabled: true
+  
+  auth:
+    database: hpa_production
+    username: hpa_prod_user
+    password: "${POSTGRES_PASSWORD_FROM_VAULT}"
+    postgresPassword: "${POSTGRES_ROOT_PASSWORD_FROM_VAULT}"
+  
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: fast-ssd
+    
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4Gi
+      requests:
+        cpu: 2000m
+        memory: 2Gi
+    
+    nodeSelector:
+      node-type: database
+    
+    tolerations:
+      - key: "database-only"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  
+  backup:
+    enabled: true
+    cronjob:
+      schedule: "0 2 * * *"
+      storage:
+        size: 100Gi
+
+redis:
+  enabled: true
+  
+  auth:
+    enabled: true
+    password: "${REDIS_PASSWORD_FROM_VAULT}"
+  
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: fast-ssd
+    
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
+  
+  replica:
+    replicaCount: 3
+    persistence:
+      enabled: true
+      size: 10Gi
+    
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  
+  sentinel:
+    enabled: true
+    quorum: 2
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
+  
+  hosts:
+    - host: hpa.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+    - host: www.hpa.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  
+  tls:
+    - secretName: hpa-tls
+      hosts:
+        - hpa.example.com
+        - www.hpa.example.com
+
+serviceAccount:
+  create: true
+  automount: true
+
+rbac:
+  create: true
+
+networkPolicy:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    labels:
+      release: prometheus-operator
+  
+  dashboards:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+  
+  alertRules:
+    enabled: true
+    labels:
+      prometheus: kube-prometheus
+
+logging:
+  enabled: true
+  level: warn
+  format: json
+  
+  fluentbit:
+    enabled: true
+    config: |
+      [OUTPUT]
+          Name  es
+          Match *
+          Host  elasticsearch.logging.svc.cluster.local
+          Port  9200
+          Index hpa-production
+          Type  _doc
+          Logstash_Format On
+          Logstash_Prefix hpa
+          Retry_Limit False
+          tls On
+          tls.verify Off
+
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: 30
+  
+  s3:
+    enabled: true
+    bucket: hpa-backups-production
+    region: us-east-1
+    endpoint: s3.amazonaws.com
+    accessKey: "${S3_ACCESS_KEY_FROM_VAULT}"
+    secretKey: "${S3_SECRET_KEY_FROM_VAULT}"
+
+# Node affinity for production workloads
+global:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - hpa-chart
+            topologyKey: kubernetes.io/hostname
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                  - application
+                  - general

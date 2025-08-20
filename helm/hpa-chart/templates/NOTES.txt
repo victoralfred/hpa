@@ -1,0 +1,80 @@
+1. Get the application URL by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.frontend.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "hpa-chart.fullname" . }}-frontend)
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.frontend.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "hpa-chart.fullname" . }}-frontend'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "hpa-chart.fullname" . }}-frontend --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.frontend.service.port }}
+{{- else if contains "ClusterIP" .Values.frontend.service.type }}
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "hpa-chart.fullname" . }}-frontend 8080:{{ .Values.frontend.service.port }}
+{{- end }}
+
+2. Access the backend API:
+{{- if contains "ClusterIP" .Values.backend.service.type }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "hpa-chart.fullname" . }}-backend 8081:{{ .Values.backend.service.port }}
+  echo "Backend API available at http://127.0.0.1:8081"
+{{- end }}
+
+3. Get the JWT secret for authentication:
+  kubectl get secret --namespace {{ .Release.Namespace }} {{ include "hpa-chart.fullname" . }}-backend -o jsonpath="{.data.jwt-secret}" | base64 -d
+
+{{- if .Values.postgresql.enabled }}
+
+4. Connect to PostgreSQL database:
+  export POSTGRES_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-postgresql -o jsonpath="{.data.password}" | base64 -d)
+  kubectl run {{ .Release.Name }}-postgresql-client --rm --tty -i --restart='Never' --namespace {{ .Release.Namespace }} --image docker.io/bitnami/postgresql:15 --env="PGPASSWORD=$POSTGRES_PASSWORD" \
+    --command -- psql --host {{ .Release.Name }}-postgresql -U {{ .Values.postgresql.auth.username }} -d {{ .Values.postgresql.auth.database }} -p 5432
+{{- end }}
+
+{{- if .Values.redis.enabled }}
+
+5. Connect to Redis:
+  export REDIS_PASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-redis -o jsonpath="{.data.redis-password}" | base64 -d)
+  kubectl run --namespace {{ .Release.Namespace }} {{ .Release.Name }}-redis-client --rm --tty -i --restart='Never' \
+    --env REDIS_PASSWORD=$REDIS_PASSWORD \
+    --image docker.io/bitnami/redis:7.2 -- bash
+  redis-cli -h {{ .Release.Name }}-redis-master -a $REDIS_PASSWORD
+{{- end }}
+
+{{- if .Values.monitoring.enabled }}
+
+6. Access monitoring:
+  - Metrics endpoint: http://{{ include "hpa-chart.fullname" . }}-backend:9090/metrics
+  {{- if .Values.monitoring.serviceMonitor.enabled }}
+  - ServiceMonitor has been created for Prometheus scraping
+  {{- end }}
+{{- end }}
+
+7. Check deployment status:
+  kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "hpa-chart.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+8. View logs:
+  # Backend logs
+  kubectl logs --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "hpa-chart.name" . }},app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=backend" -f
+  
+  # Frontend logs
+  kubectl logs --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "hpa-chart.name" . }},app.kubernetes.io/instance={{ .Release.Name }},app.kubernetes.io/component=frontend" -f
+
+9. Scale the deployment:
+  # Scale backend
+  kubectl scale --namespace {{ .Release.Namespace }} deployment/{{ include "hpa-chart.fullname" . }}-backend --replicas=5
+  
+  # Scale frontend
+  kubectl scale --namespace {{ .Release.Namespace }} deployment/{{ include "hpa-chart.fullname" . }}-frontend --replicas=3
+
+{{- if .Values.backup.enabled }}
+
+10. Backup is configured to run at: {{ .Values.backup.schedule }}
+{{- end }}
+
+For more information, visit: https://github.com/victoralfred/hpa

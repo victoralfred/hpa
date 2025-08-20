@@ -1,0 +1,483 @@
+# Global values
+global:
+  # Environment: development, staging, production
+  environment: production
+  # Domain for the application
+  domain: hpa.local
+  # Storage class for persistent volumes
+  storageClass: standard
+  # Image pull secrets
+  imagePullSecrets: []
+  # Node selector
+  nodeSelector: {}
+  # Tolerations
+  tolerations: []
+  # Affinity
+  affinity: {}
+
+# Backend configuration
+backend:
+  enabled: true
+  
+  # Image configuration
+  image:
+    repository: hpa/backend
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  # Replica configuration
+  replicaCount: 3
+  
+  # Auto-scaling configuration
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+    annotations: {}
+  
+  # Resources
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  
+  # Environment variables
+  env:
+    SERVER_HOST: "0.0.0.0"
+    SERVER_PORT: "8080"
+    LOG_LEVEL: "info"
+    ENVIRONMENT: "production"
+    
+    # Auth settings
+    ACCESS_TOKEN_EXPIRY: "1h"
+    REFRESH_TOKEN_EXPIRY: "24h"
+    REQUIRE_EMAIL_VERIFICATION: "true"
+    
+    # CORS settings
+    ALLOWED_ORIGINS: "https://hpa.local"
+    
+    # Rate limiting
+    RATE_LIMIT_REQUESTS: "100"
+    RATE_LIMIT_WINDOW: "1m"
+    
+    # Feature flags
+    ENABLE_METRICS: "true"
+    ENABLE_TRACING: "true"
+    ENABLE_AUDIT: "true"
+  
+  # Secrets (will be created as Kubernetes Secret)
+  secrets:
+    JWT_SECRET: "change-this-secret-in-production"
+    DATABASE_URL: ""  # Will be constructed from PostgreSQL values
+  
+  # ConfigMap for additional configuration
+  configMap:
+    enabled: true
+  
+  # Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  
+  # Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+  
+  # Volume mounts for migrations
+  volumeMounts:
+    - name: migrations
+      mountPath: /app/migrations
+      readOnly: true
+  
+  # Volumes
+  volumes:
+    - name: migrations
+      configMap:
+        name: "{{ .Release.Name }}-migrations"
+
+# Frontend configuration
+frontend:
+  enabled: true
+  
+  # Image configuration
+  image:
+    repository: hpa/frontend
+    tag: "1.0.0"
+    pullPolicy: IfNotPresent
+  
+  # Replica configuration
+  replicaCount: 2
+  
+  # Auto-scaling configuration
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+  
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+    annotations: {}
+  
+  # Resources
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  
+  # Liveness and readiness probes
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 5
+  
+  # Nginx configuration
+  nginxConfig: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+        
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+        
+        # Gzip compression
+        gzip on;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+        
+        # SPA routing
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+        
+        # API proxy
+        location /api {
+            proxy_pass http://{{ .Release.Name }}-backend:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+        
+        # Health check endpoint
+        location /health {
+            access_log off;
+            return 200 "healthy\n";
+            add_header Content-Type text/plain;
+        }
+    }
+  
+  # Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    fsGroup: 101
+  
+  # Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  
+  # Auth configuration
+  auth:
+    database: hpa_db
+    username: hpa_admin
+    password: "change-this-password"
+    postgresPassword: "change-this-postgres-password"
+  
+  # Primary configuration
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""  # Uses global.storageClass if empty
+    
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    
+    # Init scripts
+    initdb:
+      scripts:
+        01-init.sql: |
+          -- Enable extensions
+          CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+          CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+  
+  # Metrics
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  
+  # Backup configuration
+  backup:
+    enabled: true
+    cronjob:
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      successfulJobsHistoryLimit: 3
+      failedJobsHistoryLimit: 1
+      storage:
+        size: 10Gi
+
+# Redis configuration
+redis:
+  enabled: true
+  
+  # Auth configuration
+  auth:
+    enabled: true
+    password: "change-this-redis-password"
+  
+  # Master configuration
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+      storageClass: ""  # Uses global.storageClass if empty
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+  
+  # Replica configuration
+  replica:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      size: 2Gi
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+  
+  # Metrics
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+  
+  hosts:
+    - host: hpa.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  
+  tls:
+    - secretName: hpa-tls
+      hosts:
+        - hpa.local
+
+# Service Account
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# RBAC
+rbac:
+  create: true
+  rules:
+    - apiGroups: [""]
+      resources: ["configmaps", "secrets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "list"]
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      - podSelector:
+          matchLabels:
+            app.kubernetes.io/name: "{{ .Release.Name }}"
+  
+  egress:
+    - to:
+      - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
+        - protocol: TCP
+          port: 6379  # Redis
+        - protocol: TCP
+          port: 53    # DNS
+        - protocol: UDP
+          port: 53    # DNS
+        - protocol: TCP
+          port: 443   # HTTPS (external services)
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Monitoring and observability
+monitoring:
+  enabled: true
+  
+  # Prometheus ServiceMonitor
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+    labels:
+      release: prometheus
+  
+  # Grafana dashboards
+  dashboards:
+    enabled: true
+    labels:
+      grafana_dashboard: "1"
+  
+  # Alert rules
+  alertRules:
+    enabled: true
+    labels:
+      prometheus: kube-prometheus
+
+# Logging
+logging:
+  enabled: true
+  level: info
+  format: json
+  
+  # Fluentd/Fluent Bit configuration
+  fluentbit:
+    enabled: true
+    config: |
+      [OUTPUT]
+          Name  es
+          Match *
+          Host  elasticsearch
+          Port  9200
+          Index hpa
+          Type  _doc
+
+# Backup and restore
+backup:
+  enabled: true
+  schedule: "0 3 * * *"  # Daily at 3 AM
+  retention: 30  # Days
+  
+  s3:
+    enabled: false
+    bucket: ""
+    region: ""
+    endpoint: ""
+    accessKey: ""
+    secretKey: ""
+
+# Testing
+tests:
+  enabled: true
+  image:
+    repository: busybox
+    tag: latest
+    pullPolicy: IfNotPresent

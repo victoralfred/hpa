@@ -135,4 +135,4 @@ web/interactive-ui-designer.js
 backend_backup/
 *.env_copy.debug
 *.env_copy.example
-*backend
+*/build

@@ -1,0 +1,30 @@
+apiVersion: v2
+name: hpa-chart
+description: A comprehensive Helm chart for HPA multi-tenant authentication system
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - hpa
+  - multi-tenant
+  - authentication
+  - golang
+  - solidjs
+maintainers:
+  - name: HPA Team
+    email: victoralfred32@gmail.com
+home: https://github.com/victoralfred/hpa-backend
+sources:
+  - https://github.com/victoralfred/hpa-backend
+dependencies:
+  - name: postgresql
+    version: "13.2.24"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.6.1"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+annotations:
+  category: Authentication
+  licenses: Apache-2.0
