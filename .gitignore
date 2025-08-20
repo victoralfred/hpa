@@ -136,3 +136,10 @@ backend_backup/
 *.env_copy.debug
 *.env_copy.example
 */build
+!README.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!LICENSE
+!SECURITY.md
+!CODE_OF_CONDUCT.md
+!AUTHORS.md
