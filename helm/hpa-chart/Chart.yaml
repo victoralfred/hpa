@@ -13,9 +13,9 @@ keywords:
 maintainers:
   - name: HPA Team
     email: victoralfred32@gmail.com
-home: https://github.com/victoralfred/hpa-backend
+home: https://github.com/victoralfred/hpa
 sources:
-  - https://github.com/victoralfred/hpa-backend
+  - https://github.com/victoralfred/hpa
 dependencies:
   - name: postgresql
     version: "13.2.24"
