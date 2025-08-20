@@ -1,0 +1,138 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.test
+
+# Temporary files
+tmp/
+temp/
+
+# Docker
+.docker/
+postgres_data/
+redis_data/
+pgadmin_data/
+
+# Kubernetes
+*.kubeconfig
+kubeconfig*
+
+# AI/ML models and data
+models/
+data/
+*.pkl
+*.h5
+*.pb
+
+# Monitoring and metrics
+prometheus_data/
+grafana_data/
+
+# Build artifacts
+.build/
+target/
+
+# Editor backups
+*.bak
+*.orig
+
+# Local configuration overrides
+config.local.yaml
+*.local.yaml
+
+# Give environment-specific files a chance to be ignored
+.env.credentials
+.env.secrets
+.env*
+push-to-remote.sh
+# All md files
+*.md
+# Documentation directories
+doc/
+*.docs/
+*/docs/
+*/*/*.md
+!backend/*/docs/
+# Node modules in web directory
+web/node_modules
+web/node_modules/
+web/node_modules/.vite/
+*/bin/
+web/.vite/
+*/scaler
+*/hpa-scaler-server
+web/node_modules/.vite/deps/_metadata.json
+web/node_modules/.vite/deps/_metadata.json
+web/node_modules/.package-lock.json
+*/*.html
+*/*.json
+/venv
+docs/
+documents/
+application.yaml
+tenant.yaml
+*.html
+# Exclude the docs directory within the backend
+!backend/docs/
+# Exclude the docs directory within the frontend
+!frontend/docs/
+*.log
+*.log.*
+web/screenshots/
+web/screenshots/*
+web/ui-design-tool.js
+web/design-key-management-ui.js
+web/interactive-ui-designer.js
+backend_backup/
+*.env_copy.debug
+*.env_copy.example
+*backend
