@@ -1,0 +1,88 @@
+# Production Values Override Example
+# IMPORTANT: Copy this file and replace all placeholder values with secure, randomly generated secrets
+# DO NOT commit the actual production values file to version control
+
+global:
+  environment: production
+  domain: your-domain.com  # Replace with your actual domain
+
+backend:
+  secrets:
+    # Generate a secure JWT secret: openssl rand -base64 32
+    JWT_SECRET: ""  # REQUIRED: Add your secure JWT secret here
+  
+  # Production replicas
+  replicaCount: 3
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+
+postgresql:
+  auth:
+    # Generate secure passwords: openssl rand -base64 32
+    password: ""  # REQUIRED: Add secure database password
+    postgresPassword: ""  # REQUIRED: Add secure postgres superuser password
+  
+  primary:
+    persistence:
+      size: 50Gi
+      storageClass: fast-ssd  # Use your production storage class
+    
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+
+redis:
+  auth:
+    # Generate secure password: openssl rand -base64 32
+    password: ""  # REQUIRED: Add secure Redis password
+  
+  master:
+    persistence:
+      size: 10Gi
+      storageClass: fast-ssd
+    
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+ingress:
+  className: nginx
+  hosts:
+    - host: your-domain.com  # Replace with your domain
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+        - path: /api
+          pathType: Prefix
+          service: backend
+  
+  tls:
+    - secretName: production-tls
+      hosts:
+        - your-domain.com  # Replace with your domain
+
+# Additional production configurations
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+  alertRules:
+    enabled: true
+
+backup:
+  enabled: true
+  s3:
+    enabled: true
+    bucket: your-backup-bucket  # Replace with your S3 bucket
+    region: us-east-1  # Replace with your region
+    accessKey: ""  # Add via external secret manager
+    secretKey: ""  # Add via external secret manager

@@ -1,4 +1,5 @@
 {{- if .Values.backend.enabled }}
+{{- include "hpa-chart.validateSecrets" . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,32 +35,12 @@ spec:
         - name: wait-for-postgres
           image: busybox:1.35
           command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-postgresql 5432; do echo waiting for postgres; sleep 2; done;']
-        - name: run-migrations
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              echo "Running database migrations..."
-              for file in /app/migrations/*.sql; do
-                echo "Applying $file..."
-                PGPASSWORD=$POSTGRES_PASSWORD psql -h {{ .Release.Name }}-postgresql -U $POSTGRES_USER -d $POSTGRES_DB -f $file
-              done
-              echo "Migrations completed"
-          env:
-            - name: POSTGRES_USER
-              value: {{ .Values.postgresql.auth.username }}
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-postgresql
-                  key: password
-            - name: POSTGRES_DB
-              value: {{ .Values.postgresql.auth.database }}
-          volumeMounts:
-            - name: migrations
-              mountPath: /app/migrations
-              readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
       containers:
         - name: backend
           securityContext:

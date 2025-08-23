@@ -97,7 +97,7 @@ backend:
   
   # Secrets (will be created as Kubernetes Secret)
   secrets:
-    JWT_SECRET: "change-this-secret-in-production"
+    JWT_SECRET: ""  # REQUIRED: Must be set via --set or values override
     DATABASE_URL: ""  # Will be constructed from PostgreSQL values
   
   # ConfigMap for additional configuration
@@ -246,8 +246,8 @@ postgresql:
   auth:
     database: hpa_db
     username: hpa_admin
-    password: "change-this-password"
-    postgresPassword: "change-this-postgres-password"
+    password: ""  # REQUIRED: Must be set via --set or values override
+    postgresPassword: ""  # REQUIRED: Must be set via --set or values override
   
   # Primary configuration
   primary:
@@ -295,7 +295,7 @@ redis:
   # Auth configuration
   auth:
     enabled: true
-    password: "change-this-redis-password"
+    password: ""  # REQUIRED: Must be set via --set or values override
   
   # Master configuration
   master:
