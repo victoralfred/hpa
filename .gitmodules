@@ -4,3 +4,6 @@
 [submodule "frontend"]
 	path = frontend
 	url = https://github.com/victoralfred/hpa-system.git
+[submodule "hpa-agent"]
+	path = hpa-agent
+	url = https://github.com/victoralfred/hpa-agent.git
