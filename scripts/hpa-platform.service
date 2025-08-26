@@ -1,0 +1,31 @@
+[Unit]
+Description=HPA Platform Docker Compose Application
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/voseghale/projects/hpa
+
+# Load environment variables from file
+EnvironmentFile=/home/voseghale/projects/hpa/.env.production
+
+# Start command
+ExecStart=/usr/local/bin/docker-compose -f docker-compose.production.yml --env-file .env.production up -d
+
+# Stop command
+ExecStop=/usr/local/bin/docker-compose -f docker-compose.production.yml down
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=300
+
+# Run as specific user (adjust as needed)
+User=voseghale
+Group=docker
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,349 @@
+version: '3.9'
+
+# Production Docker Compose for AWS EC2 Deployment
+# This setup is suitable for production testing on a single EC2 instance or small cluster
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hpa_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-hpa_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-hpa_db}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+      - ./scripts/postgres-backup:/backup
+    ports:
+      - "127.0.0.1:5433:5432"
+    networks:
+      - hpa_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-hpa_admin} -d ${DB_NAME:-hpa_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: hpa_redis_prod
+    restart: always
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - hpa_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Backend API
+  backend:
+    image: vicdonxp/hpa-backend
+    container_name: hpa_backend_prod
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Server Configuration
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      ENVIRONMENT: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      
+      # Database
+      DATABASE_URL: postgres://${DB_USER:-hpa_admin}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-hpa_db}?sslmode=disable
+      DATABASE_MAX_CONNECTIONS: 100
+      DATABASE_MAX_IDLE: 10
+      
+      # Redis
+      REDIS_URL: redis://default:${REDIS_PASSWORD}@redis:6379/0
+      REDIS_POOL_SIZE: 50
+      
+      # JWT & Security
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRY: ${JWT_ACCESS_TOKEN_EXPIRY:-15m}
+      JWT_REFRESH_TOKEN_EXPIRY: ${JWT_REFRESH_TOKEN_EXPIRY:-7d}
+      REQUIRE_EMAIL_VERIFICATION: ${REQUIRE_EMAIL_VERIFICATION:-true}
+      KEY_MANAGER_MASTER_KEY: ${KEY_MANAGER_MASTER_KEY}
+      
+      # CORS
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://hpa.yourdomain.com}
+      
+      # Rate Limiting
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-100}
+      RATE_LIMIT_WINDOW: ${RATE_LIMIT_WINDOW:-1m}
+      
+      # Features
+      ENABLE_METRICS: "true"
+      ENABLE_TRACING: ${ENABLE_TRACING:-false}
+      ENABLE_AUDIT: "true"
+      
+      # OAuth (Optional)
+      OAUTH_GOOGLE_CLIENT_ID: ${OAUTH_GOOGLE_CLIENT_ID:-}
+      OAUTH_GOOGLE_CLIENT_SECRET: ${OAUTH_GOOGLE_CLIENT_SECRET:-}
+      OAUTH_GITHUB_CLIENT_ID: ${OAUTH_GITHUB_CLIENT_ID:-}
+      OAUTH_GITHUB_CLIENT_SECRET: ${OAUTH_GITHUB_CLIENT_SECRET:-}
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:50051:50051"
+    volumes:
+      - ./backend/migrations:/app/migrations:ro
+      - backend_logs:/app/logs
+    networks:
+      - hpa_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # Frontend
+  frontend:
+    image: vicdonxp/hpa-frontend:v1
+    container_name: hpa_frontend_prod
+    restart: always
+    user: root
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: ${FRONTEND_API_URL:-https://api.hpa.yourdomain.com}
+    ports:
+      - "127.0.0.1:3000:80"
+    volumes:
+      - frontend_logs:/var/log/nginx
+    networks:
+      - hpa_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+
+  # Nginx Reverse Proxy & Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: hpa_nginx_prod
+    restart: always
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "8000:80"
+      - "8443:443"
+      - "50051:50051"  # gRPC port for agents
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+      - ./nginx/cache:/var/cache/nginx
+    networks:
+      - hpa_network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+
+  # Cluster Agent (Optional - for testing agent connectivity)
+  agent:
+    container_name: hpa_agent_prod
+    image: vicdonxp/hpa-agent
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      CLUSTER_ID: ${CLUSTER_ID:-docker-cluster}
+      CLUSTER_NAME: ${CLUSTER_NAME:-Docker Test Cluster}
+      TENANT_ID: ${TENANT_ID:-default}
+      AGENT_TOKEN: ${AGENT_TOKEN}
+      SCALAR_ENDPOINT: backend:50051
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      METRICS_INTERVAL: 30s
+      HEARTBEAT_INTERVAL: 15s
+      TLS_ENABLED: ${TLS_ENABLED:-false}
+    networks:
+      - hpa_network
+    volumes:
+      - agent_logs:/app/logs
+      # Mount Docker socket to monitor local containers (for testing)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Prometheus for Monitoring (Optional but recommended)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hpa_prometheus_prod
+    restart: always
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=30d'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - hpa_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # Grafana for Visualization (Optional but recommended)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hpa_grafana_prod
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3001}
+      GF_INSTALL_PLUGINS: redis-datasource,cloudwatch
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - hpa_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+
+  # Backup Service (Runs periodically)
+  backup:
+    image: postgres:15-alpine
+    container_name: hpa_backup_prod
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./scripts/backup:/scripts:ro
+      - ./backups:/backups
+      - postgres_data:/var/lib/postgresql/data:ro
+    command: >
+      sh -c "while true; do
+        echo 'Running backup at $$(date)';
+        pg_dump -h postgres -U ${DB_USER:-hpa_admin} -d ${DB_NAME:-hpa_db} > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql;
+        find /backups -type f -mtime +7 -delete;
+        sleep 86400;
+      done"
+    networks:
+      - hpa_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+networks:
+  hpa_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_logs:
+    driver: local
+  frontend_logs:
+    driver: local
+  agent_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
