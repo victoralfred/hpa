@@ -1,0 +1,334 @@
+syntax = "proto3";
+
+package hpa.agent.v1;
+
+option go_package = "github.com/victoralfred/hpa-backend/internal/grpc/proto/agent";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+
+// AgentService handles all agent-to-backend communication
+service AgentService {
+  // Bidirectional streaming RPC for continuous agent-backend communication
+  rpc Connect(stream AgentMessage) returns (stream ServerMessage);
+  
+  // Unary RPC for cluster registration
+  rpc RegisterCluster(RegisterClusterRequest) returns (RegisterClusterResponse);
+  
+  // Unary RPC for heartbeat/health checks
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+  
+  // Unary RPC for reporting metrics batch
+  rpc ReportMetrics(MetricsReportRequest) returns (MetricsReportResponse);
+  
+  // Unary RPC for reporting events batch
+  rpc ReportEvents(EventsReportRequest) returns (EventsReportResponse);
+}
+
+// Messages from Agent to Server
+message AgentMessage {
+  string message_id = 1;  // Unique message ID for tracking
+  google.protobuf.Timestamp timestamp = 2;
+  
+  oneof payload {
+    AuthRequest auth = 3;
+    MetricsReport metrics = 4;
+    EventReport events = 5;
+    StatusUpdate status = 6;
+    ScalingResponse scaling_response = 7;
+    ConfigAck config_ack = 8;
+    ErrorReport error = 9;
+  }
+}
+
+// Messages from Server to Agent
+message ServerMessage {
+  string message_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  
+  oneof payload {
+    AuthResponse auth = 3;
+    ScalingIntent scaling_intent = 4;
+    ConfigUpdate config_update = 5;
+    Command command = 6;
+    Acknowledgment ack = 7;
+  }
+}
+
+// Authentication
+message AuthRequest {
+  string cluster_id = 1;
+  string agent_token = 2;  // JWT token
+  string agent_version = 3;
+  ClusterInfo cluster_info = 4;
+}
+
+message AuthResponse {
+  bool authenticated = 1;
+  string session_id = 2;
+  google.protobuf.Duration token_ttl = 3;
+  string new_token = 4;  // For token rotation
+  string message = 5;
+}
+
+// Cluster Information
+message ClusterInfo {
+  string kubernetes_version = 1;
+  string provider = 2;  // eks, gke, aks, self-managed
+  string region = 3;
+  map<string, string> labels = 4;
+  ResourceCapacity capacity = 5;
+  repeated NodeInfo nodes = 6;
+}
+
+message NodeInfo {
+  string name = 1;
+  string role = 2;
+  map<string, string> labels = 3;
+  ResourceCapacity capacity = 4;
+  ResourceUsage usage = 5;
+  bool schedulable = 6;
+}
+
+message ResourceCapacity {
+  int64 cpu_cores = 1;
+  int64 memory_bytes = 2;
+  int64 storage_bytes = 3;
+  int64 pods_capacity = 4;
+}
+
+message ResourceUsage {
+  double cpu_percentage = 1;
+  double memory_percentage = 2;
+  double storage_percentage = 3;
+  int32 pods_running = 4;
+}
+
+// Metrics Reporting
+message MetricsReport {
+  string cluster_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  repeated WorkloadMetric workload_metrics = 3;
+  ClusterMetrics cluster_metrics = 4;
+}
+
+message WorkloadMetric {
+  string namespace = 1;
+  string workload_name = 2;
+  string workload_type = 3;  // deployment, statefulset, daemonset
+  int32 replicas = 4;
+  int32 available_replicas = 5;
+  ResourceUsage usage = 6;
+  map<string, double> custom_metrics = 7;  // For HPA metrics
+}
+
+message ClusterMetrics {
+  ResourceUsage overall_usage = 1;
+  int32 total_nodes = 2;
+  int32 ready_nodes = 3;
+  int32 total_pods = 4;
+  int32 running_pods = 5;
+  map<string, double> custom_metrics = 6;
+}
+
+// Events Reporting
+message EventReport {
+  string cluster_id = 1;
+  repeated KubernetesEvent events = 2;
+}
+
+message KubernetesEvent {
+  string namespace = 1;
+  string name = 2;
+  string kind = 3;
+  string type = 4;  // Normal, Warning
+  string reason = 5;
+  string message = 6;
+  google.protobuf.Timestamp timestamp = 7;
+  string source_component = 8;
+  map<string, string> labels = 9;
+}
+
+// Status Updates
+message StatusUpdate {
+  string cluster_id = 1;
+  ClusterStatus status = 2;
+  string message = 3;
+  ClusterHealth health = 4;
+}
+
+enum ClusterStatus {
+  CLUSTER_STATUS_UNKNOWN = 0;
+  CLUSTER_STATUS_CONNECTING = 1;
+  CLUSTER_STATUS_CONNECTED = 2;
+  CLUSTER_STATUS_HEALTHY = 3;
+  CLUSTER_STATUS_DEGRADED = 4;
+  CLUSTER_STATUS_UNHEALTHY = 5;
+  CLUSTER_STATUS_DISCONNECTING = 6;
+}
+
+message ClusterHealth {
+  bool api_server_healthy = 1;
+  bool etcd_healthy = 2;
+  bool controller_manager_healthy = 3;
+  bool scheduler_healthy = 4;
+  google.protobuf.Timestamp last_check = 5;
+  repeated HealthCheck component_health = 6;
+}
+
+message HealthCheck {
+  string component = 1;
+  bool healthy = 2;
+  string message = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+// Scaling Intents from Server
+message ScalingIntent {
+  string intent_id = 1;
+  string workload_namespace = 2;
+  string workload_name = 3;
+  string workload_type = 4;
+  int32 target_replicas = 5;
+  string reason = 6;
+  ScalingStrategy strategy = 7;
+  google.protobuf.Duration timeout = 8;
+}
+
+message ScalingStrategy {
+  string type = 1;  // immediate, rolling, blue-green
+  int32 max_surge = 2;
+  int32 max_unavailable = 3;
+  google.protobuf.Duration cooldown = 4;
+}
+
+// Scaling Response from Agent
+message ScalingResponse {
+  string intent_id = 1;
+  bool success = 2;
+  string message = 3;
+  int32 actual_replicas = 4;
+  google.protobuf.Timestamp executed_at = 5;
+}
+
+// Configuration Updates
+message ConfigUpdate {
+  string config_id = 1;
+  ConfigType type = 2;
+  google.protobuf.Struct config = 3;  // JSON-like config
+  bool requires_restart = 4;
+}
+
+enum ConfigType {
+  CONFIG_TYPE_UNKNOWN = 0;
+  CONFIG_TYPE_AGENT = 1;
+  CONFIG_TYPE_METRICS = 2;
+  CONFIG_TYPE_SCALING_POLICY = 3;
+  CONFIG_TYPE_SECURITY = 4;
+}
+
+message ConfigAck {
+  string config_id = 1;
+  bool applied = 2;
+  string message = 3;
+}
+
+// Commands
+message Command {
+  string command_id = 1;
+  CommandType type = 2;
+  map<string, string> parameters = 3;
+  google.protobuf.Duration timeout = 4;
+}
+
+enum CommandType {
+  COMMAND_TYPE_UNKNOWN = 0;
+  COMMAND_TYPE_RESTART = 1;
+  COMMAND_TYPE_UPGRADE = 2;
+  COMMAND_TYPE_COLLECT_DIAGNOSTICS = 3;
+  COMMAND_TYPE_FORCE_SYNC = 4;
+  COMMAND_TYPE_ROTATE_TOKEN = 5;
+}
+
+// General Acknowledgment
+message Acknowledgment {
+  string message_id = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// Error Reporting
+message ErrorReport {
+  string error_id = 1;
+  ErrorSeverity severity = 2;
+  string component = 3;
+  string message = 4;
+  string stack_trace = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  map<string, string> context = 7;
+}
+
+enum ErrorSeverity {
+  ERROR_SEVERITY_UNKNOWN = 0;
+  ERROR_SEVERITY_INFO = 1;
+  ERROR_SEVERITY_WARNING = 2;
+  ERROR_SEVERITY_ERROR = 3;
+  ERROR_SEVERITY_CRITICAL = 4;
+}
+
+// Unary RPC Messages
+message RegisterClusterRequest {
+  string name = 1;
+  string tenant_id = 2;
+  string region = 3;
+  string provider = 4;
+  map<string, string> labels = 5;
+  ClusterInfo cluster_info = 6;
+}
+
+message RegisterClusterResponse {
+  string cluster_id = 1;
+  string agent_token = 2;
+  google.protobuf.Duration token_ttl = 3;
+  string grpc_endpoint = 4;
+  bool tls_required = 5;
+  string ca_certificate = 6;
+}
+
+message HeartbeatRequest {
+  string cluster_id = 1;
+  string session_id = 2;
+  ClusterHealth health = 3;
+  ResourceUsage usage = 4;
+}
+
+message HeartbeatResponse {
+  bool acknowledged = 1;
+  google.protobuf.Timestamp server_time = 2;
+  google.protobuf.Duration next_heartbeat = 3;
+}
+
+message MetricsReportRequest {
+  string cluster_id = 1;
+  string session_id = 2;
+  repeated MetricsReport reports = 3;
+}
+
+message MetricsReportResponse {
+  bool accepted = 1;
+  int32 processed_count = 2;
+  repeated string errors = 3;
+}
+
+message EventsReportRequest {
+  string cluster_id = 1;
+  string session_id = 2;
+  repeated KubernetesEvent events = 3;
+}
+
+message EventsReportResponse {
+  bool accepted = 1;
+  int32 processed_count = 2;
+  repeated string errors = 3;
+}
