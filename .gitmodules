@@ -7,3 +7,6 @@
 [submodule "shared"]
 	path = shared
 	url = https://github.com/victoralfred/hpa-shared.git
+[submodule "agent"]
+	path = agent
+	url = https://github.com/victoralfred/hpa-agent.git
