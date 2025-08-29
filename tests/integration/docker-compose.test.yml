@@ -1,0 +1,190 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for backend
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: hpa_test
+      POSTGRES_USER: hpa_test_user
+      POSTGRES_PASSWORD: hpa_test_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hpa_test_user -d hpa_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hpa-test
+
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hpa-test
+
+  # Backend service
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    environment:
+      # Database configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: hpa_test
+      DB_USER: hpa_test_user
+      DB_PASSWORD: hpa_test_password
+      DB_SSL_MODE: disable
+      
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      
+      # Server configuration
+      PORT: 8080
+      GRPC_PORT: 9090
+      LOG_LEVEL: info
+      
+      # Authentication
+      JWT_SECRET: test_jwt_secret_key_for_integration_tests
+      AUTH_REQUIRED: "true"
+      
+      # mTLS configuration (disabled for tests)
+      MTLS_ENABLED: "false"
+      TLS_ENABLED: "false"
+      
+      # Test configuration
+      INTEGRATION_TEST_MODE: "true"
+      
+    ports:
+      - "8080:8080"  # HTTP API
+      - "9090:9090"  # gRPC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - ../../backend/config:/app/config:ro
+    networks:
+      - hpa-test
+
+  # Mock Kubernetes API server for agent testing
+  mock-k8s-api:
+    image: nginx:alpine
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./mock-k8s-responses:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - hpa-test
+
+  # Mock Prometheus for metrics testing
+  mock-prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus-test.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - hpa-test
+
+  # Integration test runner
+  integration-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      # Test configuration
+      INTEGRATION_TEST_ENV: docker
+      LOG_LEVEL: info
+      
+      # Backend connection
+      BACKEND_GRPC_ADDR: backend:9090
+      BACKEND_HTTP_ADDR: backend:8080
+      
+      # Test data configuration
+      METRICS_INTERVAL: 1s
+      BATCH_SIZE: 50
+      TEST_TIMEOUT: 120s
+      
+      # Mock services
+      MOCK_K8S_API_ADDR: mock-k8s-api:8443
+      MOCK_PROMETHEUS_ADDR: mock-prometheus:9090
+      
+      # Authentication
+      TEST_JWT_TOKEN: test_jwt_token_for_integration_tests
+      TEST_CLUSTER_ID: integration-test-cluster
+      
+    depends_on:
+      backend:
+        condition: service_healthy
+      mock-k8s-api:
+        condition: service_started
+      mock-prometheus:
+        condition: service_started
+    volumes:
+      - .:/app/tests
+      - ../../agent:/app/agent:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    working_dir: /app/tests
+    command: ["go", "test", "-v", "-timeout=300s", "./..."]
+    networks:
+      - hpa-test
+
+  # Test data seeder
+  test-data-seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile.seeder
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: hpa_test
+      DB_USER: hpa_test_user
+      DB_PASSWORD: hpa_test_password
+      DB_SSL_MODE: disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./test-data:/app/test-data:ro
+    networks:
+      - hpa-test
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  hpa-test:
+    driver: bridge
