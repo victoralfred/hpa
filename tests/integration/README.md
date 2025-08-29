@@ -12,6 +12,7 @@ The integration tests verify end-to-end functionality across the entire HPA syst
 - **Event Processing**: Kubernetes event streaming and processing
 - **Agent Lifecycle**: Registration, heartbeat, and connection management
 - **Scaling Operations**: Scaling intent delivery and response handling
+- **Rate Limiting & SSE**: Server-Sent Events rate limiting and connection management
 - **Performance & Resilience**: Load testing and error recovery
 - **Data Integrity**: Message transmission and processing accuracy
 
@@ -37,6 +38,12 @@ The integration tests verify end-to-end functionality across the entire HPA syst
 
 11. **TestSecurityAndAuthentication** - Token validation and security
 12. **TestDataIntegrity** - Message integrity and validation
+
+### Rate Limiting & SSE Tests
+
+13. **TestSSERateLimiting** - Server-Sent Events rate limiting functionality
+14. **TestConcurrentSSEConnections** - Multiple concurrent SSE connections
+15. **TestSSEConnectionTimeout** - SSE connection timeout and cleanup
 
 ## Quick Start
 
@@ -106,6 +113,11 @@ TEST_TIMEOUT=120s                 # Individual test timeout
 # Backend Connection
 BACKEND_GRPC_ADDR=localhost:9090   # Backend gRPC address
 BACKEND_HTTP_ADDR=localhost:8080   # Backend HTTP address
+
+# SSE Rate Limiting Configuration
+SSE_MAX_CONCURRENT=3              # Max concurrent SSE connections per user
+SSE_MAX_DAILY=50                  # Max SSE connection attempts per day
+SSE_CONNECTION_TIMEOUT=30m        # SSE connection timeout duration
 
 # Authentication
 TEST_JWT_TOKEN=test-jwt-token      # Test authentication token
@@ -179,6 +191,7 @@ The tests include comprehensive mock implementations:
 - **MockClusterService**: Cluster registration and management
 - **MockMetricsService**: Metrics storage and processing
 - **MockMetricsCollector**: Test data generation
+- **MockSSERateLimiter**: SSE rate limiting behavior simulation
 - **TestDataGenerator**: Consistent test data creation
 
 ## Performance Benchmarks
@@ -349,3 +362,106 @@ The integration tests include comprehensive monitoring:
 - **Alerting**: Failure detection and notification
 
 This ensures reliable testing and early detection of issues in the HPA system.
+
+## SSE Rate Limiting Testing
+
+### Overview
+
+The SSE (Server-Sent Events) rate limiting tests verify the behavior of the enhanced rate limiting system that was recently refactored to use the shared logger infrastructure.
+
+### Key Changes Tested
+
+1. **Shared Logger Integration**: Verifies proper use of `github.com/victoralfred/hpa-shared/pkg/logger`
+2. **Concurrent Connection Limits**: Tests max concurrent SSE connections per user
+3. **Daily Attempt Limits**: Validates daily connection attempt quotas
+4. **Connection Timeout Handling**: Ensures proper cleanup of stale connections
+5. **Memory Leak Prevention**: Verifies efficient memory management in rate limiting
+6. **Error Handling Improvements**: Tests enhanced error reporting and logging
+
+### SSE Rate Limiting Test Scenarios
+
+#### 1. Basic Rate Limiting (`TestSSERateLimiting`)
+
+```go
+func TestSSERateLimiting(t *testing.T) {
+    suite := SetupTestSuite(t)
+    defer suite.TearDown(t)
+    
+    // Test concurrent connection limits
+    // Test daily attempt limits  
+    // Test proper rejection responses
+    // Test rate limit header population
+}
+```
+
+#### 2. Concurrent Connections (`TestConcurrentSSEConnections`)
+
+Tests multiple simultaneous SSE connections:
+- Maximum concurrent connections per user (default: 3)
+- Connection release and cleanup
+- Proper connection counting
+- Race condition prevention
+
+#### 3. Connection Timeouts (`TestSSEConnectionTimeout`)
+
+Validates timeout behavior:
+- Connection timeout handling (default: 30 minutes)
+- Stale connection cleanup
+- Memory release on timeout
+- Proper logging of timeout events
+
+#### 4. Memory Management (`TestSSEMemoryManagement`)
+
+Verifies memory efficiency:
+- Bounded daily attempt tracking (max 2000 entries)
+- Efficient slice reallocation
+- Cleanup of old attempt records
+- Memory usage under sustained load
+
+### Testing Configuration
+
+```bash
+# SSE Rate Limiting Test Environment
+export SSE_MAX_CONCURRENT=3
+export SSE_MAX_DAILY=50  
+export SSE_CONNECTION_TIMEOUT=30m
+export LOG_LEVEL=debug
+
+# Run SSE-specific tests
+make test-single TEST=TestSSERateLimiting
+make test-single TEST=TestConcurrentSSEConnections
+make test-single TEST=TestSSEConnectionTimeout
+```
+
+### Expected Test Results
+
+- **Connection Limits**: Properly enforced concurrent connection limits
+- **Daily Limits**: Accurate daily attempt counting and enforcement
+- **Timeout Handling**: Automatic cleanup of stale connections
+- **Logging Quality**: Structured logs with proper fields using shared logger
+- **Memory Efficiency**: No memory leaks under sustained connection attempts
+- **Error Responses**: Proper HTTP status codes and error messages
+
+### Debugging SSE Rate Limiting Tests
+
+```bash
+# Enable detailed logging
+LOG_LEVEL=debug make test-single TEST=TestSSERateLimiting
+
+# Check rate limiting metrics
+curl http://localhost:8080/metrics | grep sse_rate_limit
+
+# Monitor connection counts  
+watch 'curl -s http://localhost:8080/debug/sse-stats'
+```
+
+### Known Improvements
+
+The recent refactoring addressed several issues:
+1. **Race Condition Fix**: Eliminated race condition in `GetMetrics()` function
+2. **Memory Leak Prevention**: Enhanced with efficient slice management
+3. **Error Handling**: Improved with structured error responses
+4. **Logging Consistency**: Migrated to shared logger with structured fields
+5. **Time Zone Handling**: Added UTC validation helpers for consistent day boundaries
+
+These improvements ensure robust SSE rate limiting behavior across distributed deployments.
