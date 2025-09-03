@@ -80,7 +80,7 @@ grafana_data/
 # Build artifacts
 .build/
 target/
-
+build/
 # Editor backups
 *.bak
 *.orig
