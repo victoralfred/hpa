@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="prodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E74C3C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C0392B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="stagingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F39C12;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E67E22;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="devGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2ECC71;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#27AE60;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498DB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980B9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="networkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9B59B6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8E44AD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="700" y="40" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    HPA Autoscaler Multi-Environment Deployment Architecture
+  </text>
+
+  <!-- Production Environment -->
+  <g>
+    <rect x="50" y="80" width="400" height="270" fill="url(#prodGrad)" stroke="#C0392B" stroke-width="3" rx="15"/>
+    <text x="250" y="110" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">
+      Production Environment
+    </text>
+    <text x="250" y="130" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="white">
+      High Availability • Auto-Scaling • Monitoring
+    </text>
+
+    <!-- Control Plane -->
+    <rect x="70" y="150" width="170" height="80" fill="white" stroke="#C0392B" stroke-width="2" rx="8"/>
+    <text x="155" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C0392B">
+      Control Plane (HA)
+    </text>
+    <text x="155" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • 3x Backend Instances
+    </text>
+    <text x="155" y="200" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • Load Balanced gRPC
+    </text>
+    <text x="155" y="215" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • PostgreSQL Cluster
+    </text>
+
+    <!-- Agent Nodes -->
+    <rect x="260" y="150" width="170" height="80" fill="white" stroke="#C0392B" stroke-width="2" rx="8"/>
+    <text x="345" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C0392B">
+      Agent Deployment
+    </text>
+    <text x="345" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • DaemonSet on all nodes
+    </text>
+    <text x="345" y="200" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • mTLS authentication
+    </text>
+    <text x="345" y="215" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • Auto-discovery
+    </text>
+
+    <!-- Monitoring -->
+    <rect x="70" y="250" width="170" height="80" fill="white" stroke="#C0392B" stroke-width="2" rx="8"/>
+    <text x="155" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C0392B">
+      Monitoring Stack
+    </text>
+    <text x="155" y="285" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • Prometheus Cluster
+    </text>
+    <text x="155" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • Grafana Dashboards
+    </text>
+    <text x="155" y="315" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • AlertManager
+    </text>
+
+    <!-- Security -->
+    <rect x="260" y="250" width="170" height="80" fill="white" stroke="#C0392B" stroke-width="2" rx="8"/>
+    <text x="345" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#C0392B">
+      Security Layer
+    </text>
+    <text x="345" y="285" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • Network Policies
+    </text>
+    <text x="345" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • RBAC Policies
+    </text>
+    <text x="345" y="315" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#C0392B">
+      • Secret Management
+    </text>
+  </g>
+
+  <!-- Staging Environment -->
+  <g>
+    <rect x="500" y="80" width="400" height="270" fill="url(#stagingGrad)" stroke="#E67E22" stroke-width="3" rx="15"/>
+    <text x="700" y="110" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">
+      Staging Environment
+    </text>
+    <text x="700" y="130" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="white">
+      Production Mirror • Testing • Validation
+    </text>
+
+    <!-- Control Plane -->
+    <rect x="520" y="150" width="170" height="80" fill="white" stroke="#E67E22" stroke-width="2" rx="8"/>
+    <text x="605" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#E67E22">
+      Control Plane
+    </text>
+    <text x="605" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • 2x Backend Instances
+    </text>
+    <text x="605" y="200" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Load Balanced
+    </text>
+    <text x="605" y="215" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • PostgreSQL Primary
+    </text>
+
+    <!-- Agent Nodes -->
+    <rect x="710" y="150" width="170" height="80" fill="white" stroke="#E67E22" stroke-width="2" rx="8"/>
+    <text x="795" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#E67E22">
+      Agent Deployment
+    </text>
+    <text x="795" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Selective deployment
+    </text>
+    <text x="795" y="200" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Feature flags
+    </text>
+    <text x="795" y="215" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • A/B testing
+    </text>
+
+    <!-- Testing -->
+    <rect x="520" y="250" width="170" height="80" fill="white" stroke="#E67E22" stroke-width="2" rx="8"/>
+    <text x="605" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#E67E22">
+      Testing Framework
+    </text>
+    <text x="605" y="285" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Integration Tests
+    </text>
+    <text x="605" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Load Testing
+    </text>
+    <text x="605" y="315" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Chaos Engineering
+    </text>
+
+    <!-- Validation -->
+    <rect x="710" y="250" width="170" height="80" fill="white" stroke="#E67E22" stroke-width="2" rx="8"/>
+    <text x="795" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#E67E22">
+      Validation Suite
+    </text>
+    <text x="795" y="285" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Smoke Tests
+    </text>
+    <text x="795" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Performance Tests
+    </text>
+    <text x="795" y="315" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#E67E22">
+      • Security Scans
+    </text>
+  </g>
+
+  <!-- Development Environment -->
+  <g>
+    <rect x="950" y="80" width="400" height="270" fill="url(#devGrad)" stroke="#27AE60" stroke-width="3" rx="15"/>
+    <text x="1150" y="110" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="white">
+      Development Environment
+    </text>
+    <text x="1150" y="130" font-family="Arial, sans-serif" font-size="12" text-anchor="middle" fill="white">
+      Rapid Development • Feature Testing • Debug Mode
+    </text>
+
+    <!-- Control Plane -->
+    <rect x="970" y="150" width="170" height="80" fill="white" stroke="#27AE60" stroke-width="2" rx="8"/>
+    <text x="1055" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#27AE60">
+      Control Plane
+    </text>
+    <text x="1055" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Single Instance
+    </text>
+    <text x="1055" y="200" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Debug Logging
+    </text>
+    <text x="1055" y="215" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Local Database
+    </text>
+
+    <!-- Agent Nodes -->
+    <rect x="1160" y="150" width="170" height="80" fill="white" stroke="#27AE60" stroke-width="2" rx="8"/>
+    <text x="1245" y="170" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#27AE60">
+      Agent Deployment
+    </text>
+    <text x="1245" y="185" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Local development
+    </text>
+    <text x="1245" y="200" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Hot reload
+    </text>
+    <text x="1245" y="215" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Mock services
+    </text>
+
+    <!-- Development Tools -->
+    <rect x="970" y="250" width="170" height="80" fill="white" stroke="#27AE60" stroke-width="2" rx="8"/>
+    <text x="1055" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#27AE60">
+      Dev Tools
+    </text>
+    <text x="1055" y="285" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Live Debugging
+    </text>
+    <text x="1055" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Code Coverage
+    </text>
+    <text x="1055" y="315" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Profiling Tools
+    </text>
+
+    <!-- Mock Services -->
+    <rect x="1160" y="250" width="170" height="80" fill="white" stroke="#27AE60" stroke-width="2" rx="8"/>
+    <text x="1245" y="270" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#27AE60">
+      Mock Services
+    </text>
+    <text x="1245" y="285" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Fake Prometheus
+    </text>
+    <text x="1245" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Mock Kafka
+    </text>
+    <text x="1245" y="315" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#27AE60">
+      • Stub APIs
+    </text>
+  </g>
+
+  <!-- Cloud Infrastructure -->
+  <g>
+    <rect x="50" y="400" width="1300" height="200" fill="url(#cloudGrad)" stroke="#2980B9" stroke-width="3" rx="15"/>
+    <text x="700" y="430" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">
+      Multi-Cloud Infrastructure Support
+    </text>
+
+    <!-- AWS -->
+    <rect x="100" y="450" width="200" height="120" fill="white" stroke="#2980B9" stroke-width="2" rx="8"/>
+    <text x="200" y="475" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Amazon Web Services
+    </text>
+    <text x="200" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • EKS Clusters
+    </text>
+    <text x="200" y="510" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Application Load Balancer
+    </text>
+    <text x="200" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • RDS PostgreSQL
+    </text>
+    <text x="200" y="540" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • CloudWatch Integration
+    </text>
+    <text x="200" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • IAM Roles for Service Accounts
+    </text>
+
+    <!-- Azure -->
+    <rect x="320" y="450" width="200" height="120" fill="white" stroke="#2980B9" stroke-width="2" rx="8"/>
+    <text x="420" y="475" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Microsoft Azure
+    </text>
+    <text x="420" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • AKS Clusters
+    </text>
+    <text x="420" y="510" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Azure Load Balancer
+    </text>
+    <text x="420" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Azure Database for PostgreSQL
+    </text>
+    <text x="420" y="540" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Azure Monitor
+    </text>
+    <text x="420" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Azure Active Directory
+    </text>
+
+    <!-- GCP -->
+    <rect x="540" y="450" width="200" height="120" fill="white" stroke="#2980B9" stroke-width="2" rx="8"/>
+    <text x="640" y="475" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Google Cloud Platform
+    </text>
+    <text x="640" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • GKE Clusters
+    </text>
+    <text x="640" y="510" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Google Cloud Load Balancer
+    </text>
+    <text x="640" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Cloud SQL PostgreSQL
+    </text>
+    <text x="640" y="540" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Cloud Monitoring
+    </text>
+    <text x="640" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Workload Identity
+    </text>
+
+    <!-- On-Premises -->
+    <rect x="760" y="450" width="200" height="120" fill="white" stroke="#2980B9" stroke-width="2" rx="8"/>
+    <text x="860" y="475" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      On-Premises
+    </text>
+    <text x="860" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Kubernetes Vanilla
+    </text>
+    <text x="860" y="510" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • MetalLB Load Balancer
+    </text>
+    <text x="860" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Self-hosted PostgreSQL
+    </text>
+    <text x="860" y="540" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Prometheus Stack
+    </text>
+    <text x="860" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • LDAP/OIDC Integration
+    </text>
+
+    <!-- Edge/Hybrid -->
+    <rect x="980" y="450" width="200" height="120" fill="white" stroke="#2980B9" stroke-width="2" rx="8"/>
+    <text x="1080" y="475" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Edge/Hybrid Cloud
+    </text>
+    <text x="1080" y="495" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • K3s/MicroK8s
+    </text>
+    <text x="1080" y="510" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Lightweight deployment
+    </text>
+    <text x="1080" y="525" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Local database
+    </text>
+    <text x="1080" y="540" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Edge monitoring
+    </text>
+    <text x="1080" y="555" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2980B9">
+      • Intermittent connectivity
+    </text>
+  </g>
+
+  <!-- Network and Security Layer -->
+  <g>
+    <rect x="50" y="650" width="1300" height="180" fill="url(#networkGrad)" stroke="#8E44AD" stroke-width="3" rx="15"/>
+    <text x="700" y="680" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="white">
+      Network Security &amp; Communication Layer
+    </text>
+
+    <!-- Network Security -->
+    <rect x="100" y="700" width="250" height="110" fill="white" stroke="#8E44AD" stroke-width="2" rx="8"/>
+    <text x="225" y="725" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#8E44AD">
+      Network Security
+    </text>
+    <text x="225" y="745" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • mTLS for all communications
+    </text>
+    <text x="225" y="760" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Network policies isolation
+    </text>
+    <text x="225" y="775" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Certificate rotation
+    </text>
+    <text x="225" y="790" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • VPN tunnels for multi-region
+    </text>
+
+    <!-- Service Mesh -->
+    <rect x="370" y="700" width="250" height="110" fill="white" stroke="#8E44AD" stroke-width="2" rx="8"/>
+    <text x="495" y="725" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#8E44AD">
+      Service Mesh Integration
+    </text>
+    <text x="495" y="745" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Istio/Linkerd compatibility
+    </text>
+    <text x="495" y="760" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Traffic management
+    </text>
+    <text x="495" y="775" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Observability integration
+    </text>
+    <text x="495" y="790" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Circuit breaker patterns
+    </text>
+
+    <!-- Communication Protocols -->
+    <rect x="640" y="700" width="250" height="110" fill="white" stroke="#8E44AD" stroke-width="2" rx="8"/>
+    <text x="765" y="725" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#8E44AD">
+      Communication Protocols
+    </text>
+    <text x="765" y="745" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • gRPC streaming (primary)
+    </text>
+    <text x="765" y="760" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • HTTP/2 with TLS 1.3
+    </text>
+    <text x="765" y="775" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • WebSocket fallback
+    </text>
+    <text x="765" y="790" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Health check endpoints
+    </text>
+
+    <!-- Multi-Region -->
+    <rect x="910" y="700" width="250" height="110" fill="white" stroke="#8E44AD" stroke-width="2" rx="8"/>
+    <text x="1035" y="725" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#8E44AD">
+      Multi-Region Support
+    </text>
+    <text x="1035" y="745" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Cross-region replication
+    </text>
+    <text x="1035" y="760" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Global load balancing
+    </text>
+    <text x="1035" y="775" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Disaster recovery
+    </text>
+    <text x="1035" y="790" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#8E44AD">
+      • Latency optimization
+    </text>
+  </g>
+
+  <!-- Deployment Pipeline -->
+  <g>
+    <rect x="50" y="870" width="1300" height="100" fill="#F8F9FA" stroke="#6C757D" stroke-width="2" rx="10"/>
+    <text x="700" y="900" font-family="Arial, sans-serif" font-size="18" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+      CI/CD Pipeline &amp; Deployment Strategy
+    </text>
+
+    <!-- GitOps -->
+    <rect x="100" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="175" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      GitOps
+    </text>
+    <text x="175" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      ArgoCD/Flux
+    </text>
+    <text x="175" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Declarative
+    </text>
+
+    <!-- Helm Charts -->
+    <rect x="270" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="345" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Helm Charts
+    </text>
+    <text x="345" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Templated
+    </text>
+    <text x="345" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Deployments
+    </text>
+
+    <!-- Container Registry -->
+    <rect x="440" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="515" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Container Registry
+    </text>
+    <text x="515" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Multi-arch
+    </text>
+    <text x="515" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Images
+    </text>
+
+    <!-- Blue/Green -->
+    <rect x="610" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="685" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Blue/Green
+    </text>
+    <text x="685" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Zero-downtime
+    </text>
+    <text x="685" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Deployments
+    </text>
+
+    <!-- Canary -->
+    <rect x="780" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="855" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Canary Releases
+    </text>
+    <text x="855" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Progressive
+    </text>
+    <text x="855" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Rollout
+    </text>
+
+    <!-- Rollback -->
+    <rect x="950" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="1025" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Auto Rollback
+    </text>
+    <text x="1025" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Health-based
+    </text>
+    <text x="1025" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Recovery
+    </text>
+
+    <!-- Monitoring -->
+    <rect x="1120" y="915" width="150" height="45" fill="#E8F4F8" stroke="#2980B9" stroke-width="1" rx="5"/>
+    <text x="1195" y="932" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#2980B9">
+      Deployment
+    </text>
+    <text x="1195" y="946" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      Monitoring
+    </text>
+    <text x="1195" y="957" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#2980B9">
+      &amp; Alerts
+    </text>
+  </g>
+
+  <!-- Environment flow arrows -->
+  <defs>
+    <marker id="envArrow" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L10,4 z" fill="#2C3E50"/>
+    </marker>
+  </defs>
+  
+  <!-- Dev to Staging -->
+  <path d="M 950 215 L 500 215" stroke="#2C3E50" stroke-width="4" stroke-dasharray="10,5" fill="none" marker-end="url(#envArrow)"/>
+  <text x="725" y="205" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    Automated Testing
+  </text>
+  
+  <!-- Staging to Prod -->
+  <path d="M 500 285 L 450 285" stroke="#2C3E50" stroke-width="4" stroke-dasharray="10,5" fill="none" marker-end="url(#envArrow)"/>
+  <text x="475" y="275" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    QA Approval
+  </text>
+
+  <!-- Environment connections to infrastructure -->
+  <path d="M 250 350 L 250 400" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#envArrow)"/>
+  <path d="M 700 350 L 640 400" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#envArrow)"/>
+  <path d="M 1150 350 L 1080 400" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#envArrow)"/>
+</svg>

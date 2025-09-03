@@ -1,0 +1,177 @@
+/* Authentication pages specific styles */
+
+/* Enhanced mobile-first responsive design */
+@media (max-width: 768px) {
+  /* Container adjustments for tablets and below */
+  .auth-container {
+    padding: var(--space-4) var(--space-3) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Mobile-specific adjustments */
+  .auth-container {
+    padding: var(--space-3) var(--space-2) !important;
+  }
+  
+  .auth-card {
+    padding: var(--space-4) !important;
+    margin: var(--space-2) 0 !important;
+  }
+  
+  .auth-logo {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    margin-bottom: var(--space-4) !important;
+  }
+  
+  .auth-title {
+    font-size: var(--font-size-xl) !important;
+    line-height: var(--line-height-tight) !important;
+  }
+
+  .auth-subtitle {
+    font-size: var(--font-size-sm) !important;
+  }
+
+  /* Form field spacing adjustments for mobile */
+  .auth-form-field {
+    margin-bottom: var(--space-4) !important;
+  }
+
+  /* Social login buttons - smaller on mobile */
+  .social-login-button {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  /* Password strength indicator - smaller text */
+  .password-strength-text {
+    font-size: 0.65rem !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .auth-gradient {
+    background: var(--color-background) !important;
+  }
+  
+  .auth-card {
+    border: 2px solid var(--color-border) !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-up {
+    animation: none !important;
+  }
+  
+  .auth-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Focus management for better keyboard navigation */
+.auth-form input:focus,
+.auth-form button:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Loading state improvements */
+.auth-form[data-loading="true"] {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Password strength indicator improvements */
+.password-strength-bar {
+  transition: width var(--transition-fast), background-color var(--transition-fast);
+}
+
+/* Error message accessibility */
+.auth-error[role="alert"] {
+  /* Announce immediately to screen readers */
+  speak: assertive;
+}
+
+/* Touch target improvements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .auth-form button,
+  .auth-form input[type="checkbox"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .auth-link {
+    padding: var(--space-2);
+    margin: calc(-1 * var(--space-2));
+  }
+
+  /* Larger touch targets for interactive elements */
+  input[type="checkbox"] {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    margin: var(--space-1);
+  }
+
+  /* Improved button spacing for finger navigation */
+  button:not(:last-child) {
+    margin-bottom: var(--space-2);
+  }
+}
+
+/* Keyboard navigation improvements */
+*:focus-visible {
+  outline: 2px solid var(--color-primary-500) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--radius-sm);
+}
+
+/* Enhanced focus states for auth elements */
+.auth-form input:focus-visible,
+.auth-form button:focus-visible {
+  outline: 2px solid var(--color-primary-500) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgb(59 130 246 / 0.1) !important;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--color-primary-600);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  z-index: 1000;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Dark mode support (if implemented) */
+@media (prefers-color-scheme: dark) {
+  .auth-gradient {
+    background: linear-gradient(135deg, var(--color-gray-900), var(--color-gray-800));
+  }
+  
+  .auth-card {
+    background-color: var(--color-gray-800);
+    border-color: var(--color-gray-700);
+  }
+}
+
+/* Print styles (hide auth pages from printing) */
+@media print {
+  .auth-container {
+    display: none !important;
+  }
+}

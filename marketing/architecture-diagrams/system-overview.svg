@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7ED321;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5BA517;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5A623;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D2931A;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Title -->
+  <text x="600" y="40" font-family="Arial, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#2C3E50">
+    HPA Autoscaler System Architecture
+  </text>
+
+  <!-- Kubernetes Cluster -->
+  <rect x="50" y="100" width="1100" height="650" fill="#E8F4F8" stroke="#4A90E2" stroke-width="3" stroke-dasharray="10,5" rx="10"/>
+  <text x="70" y="130" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#4A90E2">Kubernetes Cluster</text>
+
+  <!-- Backend Services -->
+  <g>
+    <rect x="100" y="160" width="300" height="250" fill="url(#blueGrad)" stroke="#357ABD" stroke-width="2" rx="8"/>
+    <text x="250" y="185" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      Backend Services
+    </text>
+    
+    <!-- gRPC Server -->
+    <rect x="120" y="200" width="120" height="60" fill="#ffffff" stroke="#357ABD" stroke-width="1" rx="5"/>
+    <text x="180" y="220" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#357ABD">
+      gRPC Server
+    </text>
+    <text x="180" y="235" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      mTLS Enabled
+    </text>
+    <text x="180" y="250" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      Port: 50051
+    </text>
+    
+    <!-- REST API -->
+    <rect x="260" y="200" width="120" height="60" fill="#ffffff" stroke="#357ABD" stroke-width="1" rx="5"/>
+    <text x="320" y="220" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#357ABD">
+      REST API
+    </text>
+    <text x="320" y="235" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      Authentication
+    </text>
+    <text x="320" y="250" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      Rate Limiting
+    </text>
+    
+    <!-- Database -->
+    <rect x="120" y="280" width="120" height="60" fill="#ffffff" stroke="#357ABD" stroke-width="1" rx="5"/>
+    <text x="180" y="300" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#357ABD">
+      PostgreSQL
+    </text>
+    <text x="180" y="315" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      Multi-tenant
+    </text>
+    <text x="180" y="330" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      RLS Security
+    </text>
+    
+    <!-- Metrics -->
+    <rect x="260" y="280" width="120" height="60" fill="#ffffff" stroke="#357ABD" stroke-width="1" rx="5"/>
+    <text x="320" y="300" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#357ABD">
+      Metrics Server
+    </text>
+    <text x="320" y="315" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      Prometheus
+    </text>
+    <text x="320" y="330" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#357ABD">
+      Port: 9091
+    </text>
+  </g>
+
+  <!-- Agent Components -->
+  <g>
+    <rect x="500" y="160" width="350" height="250" fill="url(#greenGrad)" stroke="#5BA517" stroke-width="2" rx="8"/>
+    <text x="675" y="185" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      HPA Agent Components
+    </text>
+    
+    <!-- Main Agent -->
+    <rect x="520" y="200" width="100" height="60" fill="#ffffff" stroke="#5BA517" stroke-width="1" rx="5"/>
+    <text x="570" y="220" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      Main Agent
+    </text>
+    <text x="570" y="235" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#5BA517">
+      gRPC Client
+    </text>
+    <text x="570" y="250" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#5BA517">
+      Heartbeat
+    </text>
+    
+    <!-- Watchers -->
+    <rect x="640" y="200" width="100" height="60" fill="#ffffff" stroke="#5BA517" stroke-width="1" rx="5"/>
+    <text x="690" y="215" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      Watchers
+    </text>
+    <text x="690" y="230" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Pod, Node, HPA
+    </text>
+    <text x="690" y="242" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Deployment
+    </text>
+    <text x="690" y="254" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      PDB
+    </text>
+    
+    <!-- Collectors -->
+    <rect x="520" y="280" width="100" height="60" fill="#ffffff" stroke="#5BA517" stroke-width="1" rx="5"/>
+    <text x="570" y="300" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      Collectors
+    </text>
+    <text x="570" y="315" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#5BA517">
+      Resource
+    </text>
+    <text x="570" y="330" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#5BA517">
+      Custom
+    </text>
+    
+    <!-- Admission Controller -->
+    <rect x="640" y="280" width="100" height="60" fill="#ffffff" stroke="#5BA517" stroke-width="1" rx="5"/>
+    <text x="690" y="295" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      Admission
+    </text>
+    <text x="690" y="308" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      Controller
+    </text>
+    <text x="690" y="323" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Validating
+    </text>
+    <text x="690" y="335" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Mutating
+    </text>
+
+    <!-- CRD -->
+    <rect x="760" y="200" width="70" height="140" fill="#ffffff" stroke="#5BA517" stroke-width="1" rx="5"/>
+    <text x="795" y="220" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      Scaler
+    </text>
+    <text x="795" y="235" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#5BA517">
+      CRD
+    </text>
+    <text x="795" y="255" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Kafka
+    </text>
+    <text x="795" y="268" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Prometheus
+    </text>
+    <text x="795" y="281" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Nginx
+    </text>
+    <text x="795" y="294" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Resource
+    </text>
+    <text x="795" y="307" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      External
+    </text>
+    <text x="795" y="320" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#5BA517">
+      Custom CEL
+    </text>
+  </g>
+
+  <!-- External Systems -->
+  <g>
+    <rect x="900" y="160" width="200" height="250" fill="url(#orangeGrad)" stroke="#D2931A" stroke-width="2" rx="8"/>
+    <text x="1000" y="185" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="white">
+      External Systems
+    </text>
+    
+    <!-- Prometheus -->
+    <rect x="920" y="200" width="80" height="50" fill="#ffffff" stroke="#D2931A" stroke-width="1" rx="5"/>
+    <text x="960" y="220" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#D2931A">
+      Prometheus
+    </text>
+    <text x="960" y="235" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#D2931A">
+      Metrics API
+    </text>
+    
+    <!-- Kafka -->
+    <rect x="1010" y="200" width="80" height="50" fill="#ffffff" stroke="#D2931A" stroke-width="1" rx="5"/>
+    <text x="1050" y="220" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#D2931A">
+      Kafka
+    </text>
+    <text x="1050" y="235" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#D2931A">
+      Consumer Lag
+    </text>
+    
+    <!-- Nginx -->
+    <rect x="920" y="270" width="80" height="50" fill="#ffffff" stroke="#D2931A" stroke-width="1" rx="5"/>
+    <text x="960" y="290" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#D2931A">
+      Nginx
+    </text>
+    <text x="960" y="305" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#D2931A">
+      Status API
+    </text>
+    
+    <!-- External APIs -->
+    <rect x="1010" y="270" width="80" height="50" fill="#ffffff" stroke="#D2931A" stroke-width="1" rx="5"/>
+    <text x="1050" y="285" font-family="Arial, sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="#D2931A">
+      External
+    </text>
+    <text x="1050" y="298" font-family="Arial, sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="#D2931A">
+      APIs
+    </text>
+    <text x="1050" y="313" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#D2931A">
+      Custom
+    </text>
+  </g>
+
+  <!-- Workloads -->
+  <g>
+    <rect x="100" y="450" width="750" height="120" fill="#F8F9FA" stroke="#6C757D" stroke-width="2" rx="8"/>
+    <text x="475" y="475" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Target Workloads
+    </text>
+    
+    <!-- Deployments -->
+    <rect x="130" y="490" width="100" height="60" fill="#ffffff" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="180" y="510" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Deployments
+    </text>
+    <text x="180" y="525" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Auto-scaling
+    </text>
+    <text x="180" y="540" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Pods
+    </text>
+    
+    <!-- StatefulSets -->
+    <rect x="250" y="490" width="100" height="60" fill="#ffffff" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="300" y="510" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      StatefulSets
+    </text>
+    <text x="300" y="525" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Ordered
+    </text>
+    <text x="300" y="540" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Scaling
+    </text>
+    
+    <!-- DaemonSets -->
+    <rect x="370" y="490" width="100" height="60" fill="#ffffff" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="420" y="510" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      DaemonSets
+    </text>
+    <text x="420" y="525" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Node-based
+    </text>
+    <text x="420" y="540" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Scaling
+    </text>
+    
+    <!-- Custom Resources -->
+    <rect x="490" y="490" width="100" height="60" fill="#ffffff" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="540" y="505" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Custom
+    </text>
+    <text x="540" y="518" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Resources
+    </text>
+    <text x="540" y="535" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Scale API
+    </text>
+    <text x="540" y="547" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Compatible
+    </text>
+    
+    <!-- Nodes -->
+    <rect x="610" y="490" width="100" height="60" fill="#ffffff" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="660" y="510" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Cluster
+    </text>
+    <text x="660" y="525" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Nodes
+    </text>
+    <text x="660" y="540" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Auto-scaling
+    </text>
+    
+    <!-- HPA/VPA -->
+    <rect x="730" y="490" width="100" height="60" fill="#ffffff" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="780" y="510" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      HPA/VPA
+    </text>
+    <text x="780" y="525" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Integration
+    </text>
+    <text x="780" y="540" font-family="Arial, sans-serif" font-size="9" text-anchor="middle" fill="#6C757D">
+      Enhanced
+    </text>
+  </g>
+
+  <!-- Communication arrows -->
+  <!-- Backend to Agent -->
+  <path d="M 400 285 L 500 285" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="450" y="275" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2C3E50">gRPC Stream</text>
+  <text x="450" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2C3E50">mTLS Auth</text>
+  
+  <!-- Agent to External Systems -->
+  <path d="M 850 285 L 900 285" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="875" y="275" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2C3E50">Metrics</text>
+  <text x="875" y="300" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2C3E50">Collection</text>
+  
+  <!-- Agent to Workloads -->
+  <path d="M 675 410 L 475 450" stroke="#2C3E50" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="575" y="425" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2C3E50">Scaling</text>
+  <text x="575" y="440" font-family="Arial, sans-serif" font-size="10" text-anchor="middle" fill="#2C3E50">Actions</text>
+  
+  <!-- Control Plane -->
+  <rect x="100" y="600" width="750" height="120" fill="#FFF3CD" stroke="#856404" stroke-width="2" rx="8"/>
+  <text x="475" y="625" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#856404">
+    Kubernetes Control Plane Integration
+  </text>
+  
+  <rect x="130" y="645" width="120" height="50" fill="#ffffff" stroke="#856404" stroke-width="1" rx="5"/>
+  <text x="190" y="665" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#856404">
+    API Server
+  </text>
+  <text x="190" y="680" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#856404">
+    Custom Resources
+  </text>
+  
+  <rect x="270" y="645" width="120" height="50" fill="#ffffff" stroke="#856404" stroke-width="1" rx="5"/>
+  <text x="330" y="665" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#856404">
+    Metrics Server
+  </text>
+  <text x="330" y="680" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#856404">
+    Resource Metrics
+  </text>
+  
+  <rect x="410" y="645" width="120" height="50" fill="#ffffff" stroke="#856404" stroke-width="1" rx="5"/>
+  <text x="470" y="665" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#856404">
+    Scheduler
+  </text>
+  <text x="470" y="680" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#856404">
+    Pod Placement
+  </text>
+  
+  <rect x="550" y="645" width="120" height="50" fill="#ffffff" stroke="#856404" stroke-width="1" rx="5"/>
+  <text x="610" y="665" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#856404">
+    Controller
+  </text>
+  <text x="610" y="680" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#856404">
+    Manager
+  </text>
+  
+  <rect x="690" y="645" width="120" height="50" fill="#ffffff" stroke="#856404" stroke-width="1" rx="5"/>
+  <text x="750" y="665" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" fill="#856404">
+    etcd
+  </text>
+  <text x="750" y="680" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#856404">
+    State Storage
+  </text>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2C3E50"/>
+    </marker>
+  </defs>
+
+  <!-- Legend -->
+  <g>
+    <rect x="900" y="450" width="250" height="140" fill="#F8F9FA" stroke="#6C757D" stroke-width="1" rx="5"/>
+    <text x="1025" y="470" font-family="Arial, sans-serif" font-size="14" font-weight="bold" text-anchor="middle" fill="#6C757D">
+      Key Features
+    </text>
+    <text x="920" y="490" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">• Multi-tenant architecture</text>
+    <text x="920" y="505" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">• Real-time gRPC streaming</text>
+    <text x="920" y="520" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">• mTLS security</text>
+    <text x="920" y="535" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">• Multiple scaler types</text>
+    <text x="920" y="550" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">• Predictive scaling</text>
+    <text x="920" y="565" font-family="Arial, sans-serif" font-size="11" fill="#2C3E50">• Cost optimization</text>
+  </g>
+</svg>

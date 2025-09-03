@@ -116,7 +116,7 @@ web/node_modules/.package-lock.json
 */*.html
 */*.json
 /venv
-docs/
+docsss/
 documents/
 application.yaml
 tenant.yaml
