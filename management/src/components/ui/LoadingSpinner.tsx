@@ -40,7 +40,7 @@ const LoadingSpinner: Component<LoadingSpinnerProps> = (props) => {
         cy="12" 
         r="10" 
         stroke="currentColor" 
-        strokeWidth="4"
+        stroke-width="4"
       />
       <path 
         class="opacity-75" 

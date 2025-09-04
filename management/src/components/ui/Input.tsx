@@ -21,27 +21,27 @@ const Input: Component<InputProps> = (props) => {
   ]);
 
   const baseClasses = () =>
-    'block w-full border rounded-md shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed';
+    'block w-full border rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = () => {
     if (local.error) {
-      return 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500';
+      return 'border-error-300 text-error-900 placeholder-error-400 focus:ring-error-500 focus:border-error-500';
     }
     
     switch (local.variant || 'default') {
       case 'filled':
-        return 'border-gray-300 bg-gray-50 text-gray-900 placeholder-gray-400';
+        return 'border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:ring-primary-500 focus:border-primary-500 focus:bg-white';
       default:
-        return 'border-gray-300 text-gray-900 placeholder-gray-400';
+        return 'border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-primary-500 focus:border-primary-500';
     }
   };
 
   const sizeClasses = () => {
     const hasIcons = local.leftIcon || local.rightIcon;
     if (hasIcons) {
-      return 'px-10 py-2';
+      return 'px-12 py-3 text-base';
     }
-    return 'px-3 py-2';
+    return 'px-4 py-3 text-base';
   };
 
   const inputClasses = () => [

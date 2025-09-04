@@ -173,6 +173,109 @@ export interface CreateUserForm {
   role: UserRole;
 }
 
+// Authentication types
+export interface LoginForm {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface RegisterForm {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  termsAccepted: boolean;
+}
+
+export interface ResetPasswordForm {
+  email: string;
+}
+
+export interface PasswordResetForm {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  avatar?: string;
+  verified: boolean;
+  createdAt: string;
+  lastLogin?: string;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  isLoading: boolean;
+  error?: string;
+  token?: string;
+}
+
+export interface AuthContextType {
+  // State accessors - these are signal getters in SolidJS
+  isAuthenticated: () => boolean;
+  user: () => AuthUser | null;
+  isLoading: () => boolean;
+  error: () => string | undefined;
+  
+  // Actions
+  login: (credentials: LoginForm) => Promise<void>;
+  register: (userData: RegisterForm) => Promise<void>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (data: PasswordResetForm) => Promise<void>;
+  clearError: () => void;
+  refreshUser: () => Promise<void>;
+}
+
+// Form validation types
+export interface ValidationRule {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  message?: string;
+  validator?: (value: any, formData?: any) => string | null;
+}
+
+export interface ValidationErrors {
+  [key: string]: string | null;
+}
+
+export interface FormField {
+  name: string;
+  label: string;
+  type: 'text' | 'email' | 'password' | 'checkbox' | 'select';
+  placeholder?: string;
+  rules?: ValidationRule[];
+  options?: Array<{ label: string; value: any }>;
+}
+
+// Password strength types
+export interface PasswordStrength {
+  score: 0 | 1 | 2 | 3 | 4;
+  label: 'Very Weak' | 'Weak' | 'Fair' | 'Good' | 'Strong';
+  feedback: string[];
+  color: string;
+}
+
+// Social login types
+export interface SocialProvider {
+  id: 'google' | 'github' | 'microsoft';
+  name: string;
+  icon: string;
+  color: string;
+  enabled: boolean;
+}
+
 // UI State types
 export interface LoadingState {
   isLoading: boolean;

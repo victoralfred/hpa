@@ -1,19 +1,17 @@
 import { Component, createSignal } from 'solid-js';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
-
+import { Router, Route } from "@solidjs/router";
 // Import UI components
 import { SidebarItem } from './components/layout/Sidebar';
 
 // Import styles
 import './index.css';
+import Auth from './pages/Auth';
 
-const App: Component = () => {
-  const [user] = createSignal({
-    name: 'System Admin',
-    email: 'admin@hpa-platform.com',
-    avatar: undefined
-  });
-
+const AppContent: Component = () => {
+  const auth = useAuth();
   const [currentPage, setCurrentPage] = createSignal('dashboard');
 
   // Handle navigation
@@ -30,8 +28,8 @@ const App: Component = () => {
       href: '/',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -42,7 +40,7 @@ const App: Component = () => {
       href: '/clusters',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
         </svg>
       ),
       onClick: handleNavigation
@@ -53,7 +51,7 @@ const App: Component = () => {
       href: '/agents',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -64,7 +62,7 @@ const App: Component = () => {
       href: '/certificates',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -75,7 +73,7 @@ const App: Component = () => {
       href: '/tokens',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -86,7 +84,7 @@ const App: Component = () => {
       href: '/sessions',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -97,7 +95,7 @@ const App: Component = () => {
       href: '/users',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -108,7 +106,7 @@ const App: Component = () => {
       href: '/audit',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
       onClick: handleNavigation
@@ -119,17 +117,12 @@ const App: Component = () => {
       href: '/settings',
       icon: () => (
         <svg style="width: 1.25rem; height: 1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
       )
     }
   ];
-
-  const handleLogout = () => {
-    console.log('Logout requested');
-    // Add logout functionality here
-  };
 
   // Page components
   const renderDashboard = () => (
@@ -257,8 +250,14 @@ const App: Component = () => {
   return (
     <Layout
       sidebarItems={sidebarItems}
-      user={user()}
-      onLogout={handleLogout}
+      user={{
+        name: auth.user()?.firstName && auth.user()?.lastName 
+          ? `${auth.user()!.firstName} ${auth.user()!.lastName}`
+          : auth.user()?.email || 'User',
+        email: auth.user()?.email || '',
+        avatar: auth.user()?.avatar
+      }}
+      onLogout={() => auth.logout()}
       activeItem={currentPage()}
     >
       {renderPage()}
@@ -266,4 +265,26 @@ const App: Component = () => {
   );
 };
 
+const App: Component = () => {
+  return (
+    <AuthProvider>
+      <Router>
+        {/* Public routes */}
+        <Route path="/login" component={Auth} />
+        <Route path="/register" component={Auth} />
+        <Route path="/reset-password" component={Auth} />
+
+        {/* Protected routes */}
+        <Route
+          path="/*"
+          component={() => (
+            <ProtectedRoute>
+              <AppContent />
+            </ProtectedRoute>
+          )}
+        />
+      </Router>
+    </AuthProvider>
+  );
+};
 export default App;

@@ -363,7 +363,7 @@
 
   <!-- Arrow marker definition -->
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="stroke-width">
       <path d="M0,0 L0,6 L9,3 z" fill="#2C3E50"/>
     </marker>
   </defs>

@@ -172,19 +172,19 @@ const Dashboard: Component = () => {
         case 'up':
           return (
             <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M7 17l9.2-9.2M17 17V7m0 10H7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 17l9.2-9.2M17 17V7m0 10H7" />
             </svg>
           );
         case 'down':
           return (
             <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M7 7l9.2 9.2M17 7v10m0-10H7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M7 7l9.2 9.2M17 7v10m0-10H7" />
             </svg>
           );
         default:
           return (
             <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" strokeWidth={2} d="M5 12h14" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M5 12h14" />
             </svg>
           );
       }

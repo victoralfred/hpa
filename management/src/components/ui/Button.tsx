@@ -24,35 +24,35 @@ const Button: Component<ButtonProps> = (props) => {
   ]);
 
   const baseClasses = () => 
-    'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = () => {
     switch (local.variant || 'primary') {
       case 'primary':
-        return 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500';
+        return 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent focus:ring-blue-500';
       case 'secondary':
-        return 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500';
+        return 'bg-gray-600 hover:bg-gray-700 text-white border border-transparent focus:ring-gray-500';
       case 'outline':
-        return 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500';
+        return 'border border-gray-300 hover:border-gray-400 text-gray-700 bg-white hover:bg-gray-50 focus:ring-blue-500';
       case 'ghost':
-        return 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500';
+        return 'text-gray-700 hover:bg-gray-100 border border-transparent focus:ring-gray-500';
       case 'danger':
-        return 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500';
+        return 'bg-red-600 hover:bg-red-700 text-white border border-transparent focus:ring-red-500';
       default:
-        return 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500';
+        return 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent focus:ring-blue-500';
     }
   };
 
   const sizeClasses = () => {
     switch (local.size || 'md') {
       case 'sm':
-        return 'px-3 py-1.5 text-sm rounded-md';
+        return 'px-3 py-2 text-sm rounded-md';
       case 'md':
-        return 'px-4 py-2 text-sm rounded-md';
+        return 'px-4 py-2.5 text-sm rounded-md';
       case 'lg':
         return 'px-6 py-3 text-base rounded-lg';
       default:
-        return 'px-4 py-2 text-sm rounded-md';
+        return 'px-4 py-2.5 text-sm rounded-md';
     }
   };
 
@@ -76,7 +76,7 @@ const Button: Component<ButtonProps> = (props) => {
         cy="12" 
         r="10" 
         stroke="currentColor" 
-        strokeWidth="4"
+        stroke-width="4"
       />
       <path 
         class="opacity-75" 
